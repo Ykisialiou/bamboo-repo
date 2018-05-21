@@ -1,6 +1,6 @@
 ---
 project:
-  key: HELLO
+  key: CFDEP 
   plan:
     key: HELLO
     name: Hello world
