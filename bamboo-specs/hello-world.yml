@@ -1,0 +1,11 @@
+---
+project:
+  key: HELLO
+  plan:
+    key: HELLO
+    name: Hello world
+dockerImage: ubuntu
+stages:
+  - jobs:
+    - scripts:
+      - echo 'Hello world'
