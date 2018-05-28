@@ -2,47 +2,8 @@
 
 set -e
 
-################################################################################
-#  Script gets bosh-releases urls from cf-deployment.yml                       #
-#  inputs: cf-deployment.yml, tmp_releases_dir, upload_path                    #
-#  prerequsites: bosh CLI (>v2), wget                                          #
-################################################################################
 
-# Global varsdeployment_manifest="cf-deployment.yml"
-#tmp_releases_path="tmp"
-#upload_path=""
-#ci_repo="/home/eugene/workspace/cloudfoundry/ci"
-#cf_deployment_repo="/home/eugene/workspace/cf-deployment"
-#var_files_path="/home/eugene/workspace/cloudfoundry/var_files"
-#env_name="test" #test, or stage, or prod
-#nexus_url="http://35.198.107.62:8081/repository/test"
-#configs_path=
-#creds_path=
-
-
-## Generated files and directories path
-#tmp_ops_files="$ci_repo/tmp_ops_files"
-#rename_releases_var_path=$ci_repo/var_files/releases-urls.var
-#rename_releases_ops_path=$ci_repo/ops_files/rename-releases-urls-ops.yml
- 
-
-## Manifests
-#cf_deployment_base=""
-#cf_deployment_generated="cf_deployment_new.yml"
-
-
-##
-
-
-# Env specific vars
-#isolation_segment="true"
-#disable_bosh_dns=""
-#keep_ips="true"
-
-#cell_count=32
-#deployment_name="DEP"
-#cell_network_name="CELL_NET"
-#network_name="NET"
+function get_vars_from_bamboo() {
 
     env_name=${env_name}
     ci_repo="deployment-ci"
@@ -50,16 +11,13 @@ set -e
     var_files_path=${var_files_path}
     configs_path=${config_files_path}
     creds_path=${creds_path}   
-#    "/home/eugene/workspace/cloudfoundry/configs"
-#    creds_path=${creds_path}"/home/eugene/workspace/cloudfoundry/creds"
-
 
     if [ -z $env_name ]; then
         error "env_name doesn't set up. Please configure it"	    
     else
         info "$env_name will be used."
     fi
- 
+} 
 
 function debug() {
 # Helper function that prints debug messages
@@ -481,6 +439,7 @@ function deploy_cf(){
 
 cd $ci_repo
 #update_ops_files
+get_vars_from_bamboo
 get_env_specific_config
 configure_build
 generate_deployment_manifest
