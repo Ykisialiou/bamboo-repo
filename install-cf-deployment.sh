@@ -8,30 +8,78 @@ set -e
 #  prerequsites: bosh CLI (>v2), wget                                          #
 ################################################################################
 
-# Global vars
-deployment_manifest="cf-deployment.yml"
-tmp_releases_path="tmp"
-upload_path=""
-ci_repo="/home/eugene/workspace/cloudfoundry/ci"
-cf_deployment_repo="/home/eugene/workspace/cf-deployment"
-var_files_path="/home/eugene/workspace/cloudfoundry/var_files"
-env_name="test" #test, or stage, or prod
+# Global varsdeployment_manifest="cf-deployment.yml"
+#tmp_releases_path="tmp"
+#upload_path=""
+#ci_repo="/home/eugene/workspace/cloudfoundry/ci"
+#cf_deployment_repo="/home/eugene/workspace/cf-deployment"
+#var_files_path="/home/eugene/workspace/cloudfoundry/var_files"
+#env_name="test" #test, or stage, or prod
+#nexus_url="http://35.198.107.62:8081/repository/test"
+#configs_path=
+#creds_path=
+
+
+## Generated files and directories path
+#tmp_ops_files="$ci_repo/tmp_ops_files"
+#rename_releases_var_path=$ci_repo/var_files/releases-urls.var
+#rename_releases_ops_path=$ci_repo/ops_files/rename-releases-urls-ops.yml
+ 
+
+## Manifests
+#cf_deployment_base=""
+#cf_deployment_generated="cf_deployment_new.yml"
+
+
+##
+
 
 # Env specific vars
-isolation_segment="true"
-disable_bosh_dns="false"
-keep_ips="true"
+#isolation_segment="true"
+#disable_bosh_dns=""
+#keep_ips="true"
 
-cell_count=
-deployment_name=
-cell_network_name=
-network_name=
+#cell_count=32
+#deployment_name="DEP"
+#cell_network_name="CELL_NET"
+#network_name="NET"
+
+    env_name=${bambo.env_name}
+    ci_repo="/home/eugene/workspace/cloudfoundry/ci"
+    cf_deployment_repo="/home/eugene/workspace/cf-deployment"
+    var_files_path="/home/eugene/workspace/cloudfoundry/var_files"
+    configs_path="/home/eugene/workspace/cloudfoundry/configs"
+    creds_path="/home/eugene/workspace/cloudfoundry/creds"
+
+
+    if [ -z $env_name ]; then
+        error "env_name doesn't set up. Please configure it"	    
+    else
+        info "$env_name will be used."
+    fi
+ 
+
+function debug() {
+# Helper function that prints debug messages
+    echo  "DEBUG:$1"
+}
+
+function info() {
+# Helper function that prints log messages 
+    echo  "INFO:$1"
+}
+
+function error() {
+# Helper function that prints error messages
+    echo "ERROR:$1"
+}
+
 
 function check_bin_prerequsites() {
 # Helper function. Check if necessary SW installed, and exits if no prerequsites
 # were found
 
-    preq_bins=('bosh' 'wget1')
+    preq_bins=('bosh' 'wget')
 
     for preq_bin in ${preq_bins[@]}; do
         if ! which $preq_bin >/dev/null; then
@@ -48,33 +96,98 @@ function update_ops_files() {
 # Function will copy cf-deployment managed ops_files from cf-deployment repo to ci repo
 #   inputs: ci_repo, cf_deployment_repo
 
+    info "Check if some of necessary ops_files
+                are updated in new cf-deployment repo"
+
     for ops in $(ls -1 $ci_repo/ops_files); do
         new_ops=$(find $cf_deployment_repo/operations/ -name $ops)
         if ! [ -z $new_ops ]; then
-            echo "DEBUG: New version of ops-file $ops found. Copy $new_ops to $ci_repo/ops_files"
-            echo "cp $new_ops $ci_repo/ops_files/"
-        fi		
+            debug "New version of ops-file $ops found.
+	    Copy $new_ops to $ci_repo/ops_files"
+
+            cp $new_ops $ci_repo/ops_files/
+        fi	
     done
 }
 
-function get_env_specific_config() {
-# Function will copy env specific var_files to ci repo directory
-#   inputs: var_files_path, env_name, ci_repo 
+function configure_build() {
+# Helper function that setting up necessary variables
 
-    echo "DEBUG: copy var_files from $var_files_path/$env_name/var_files \
+    # Get vars from bamboo
+    
+    # Set up build flow vars
+
+    rename_releases_var_path="$ci_repo/var_files/releases-urls.var"
+    rename_releases_ops_path="$ci_repo/ops_files/rename-releases-urls-ops.yml"
+    tmp_ops_files="$ci_repo/tmp_ops_files"
+    cf_deployment_generated="cf-deployment-new.yml"
+    cf_deployment_base="$cf_deployment_repo/cf-deployment.yml"
+    tmp_releases_path="$ci_repo/tmp_releases"
+
+
+    if ! [ -d $ci_repo/configs ]; then
+	error "configs are not found in provided path. please configure build"    
+        exit 35
+    else 
+        debug "Use configs from $configs_path"	    
+    fi
+
+    if ! [ -d $ci_repo/creds ]; then
+	error "creds are not found in provided path. please configure build"    
+        exit 35
+    else
+       debug "Use creds from $creds_path"	    
+    fi
+
+    # Get vars from files
+    source $ci_repo/configs/*
+    source $ci_repo/creds/*
+}
+
+
+function get_env_specific_config() {
+# Function will copy env specific var_files amd misc to ci repo directory
+#   inputs: var_files_path, env_name, ci_repo 
+    info "Copy env specific var, misc and config files from path, 
+    provided in var_files_path and env_name variables." 
+
+    if ! [ -d $ci_repo/var_files ]; then
+        mkdir $ci_repo/var_files
+    fi	
+    if ! [ -d $ci_repo/misc ]; then
+        mkdir $ci_repo/misc	    
+    fi
+    if ! [ -d $ci_repo/configs ]; then
+        mkdir $ci_repo/configs	    
+    fi
+    if ! [ -d $ci_repo/creds ]; then
+        mkdir $ci_repo/creds    
+    fi
+
+    debug "Copy var_files from $var_files_path/$env_name/var_files \
 	  to $ci_repo/var_files"
-    echo "cp $var_files_path/$env_name/var_files $ci_repo/var_files"
+    cp -r $var_files_path/$env_name/var_files/* $ci_repo/var_files
+
+    debug "Copy misc from $var_files_path/$env_name/misc \
+	  to $ci_repo/misc"
+    cp -r $var_files_path/$env_name/misc/* $ci_repo/misc
+
+    debug "Copy configs from $configs_path to $ci_repo/configs"
+    cp -r $configs_path/$env_name/*  $ci_repo/configs/
+
+    debug "Copy credentials from $creds_path to $ci_repo/creds"
+    cp -r $creds_path/$env_name/*  $ci_repo/creds/
 }
 
 function prepare_ops_files() {
 # Function will generate some ops_files, that are not necessary for 
 # particular env, such as isolation_segment related files
-#   inputs: isolation_segment, disable_bosh_dns, keep_ips, ci_repo 
+#   inputs: tmp_ops_files, isolation_segment, disable_bosh_dns, 
+#           keep_ips, ci_repo 
 
-    # Generated ops files (mostly for isolation segments) will go to tmp_ops_files 
-    # directory
-    tmp_ops_files="tmp_ops_files"
-    
+    # Generated ops files (mostly for isolation segments) 
+    # will go to tmp_ops_files directory
+
     if ! [ -d "$tmp_ops_files" ]; then
       mkdir $tmp_ops_files
     else
@@ -91,34 +204,61 @@ function prepare_ops_files() {
     # Copy optional ops_files to tmp folder. They may or may not be empty
     
     cp ops_files/add-bosh-dns.yml $tmp_ops_files/add-bosh-dns.yml
-    cp ops_files/keep-static-ips-opsfile.yml $tmp_ops_files/keep-static-ips-opsfile.yml
+    cp ops_files/keep-static-ips-opsfile.yml \
+        $tmp_ops_files/keep-static-ips-opsfile.yml
     
     # Isolation segment ops_files generation
     
     if ! [ -z $isolation_segment ]; then
-      # clean up
-      rm isolation-var.tmp
-    
+
+      info  "Isolation segment will be used, so it's ops_files 
+      will be generated. misc/isolation-segment.tmpl is expected to be 
+      filled properly"
+
+      # clean up if tmp exists
+      if [ -f isolation-var.tmp ]; then
+          rm isolation-var.tmp
+      fi
       while read -r data
       do
         IFS='=' read -r dname dcount dvm <<< "$data"
     
-        ### This code will generate additional ops_files, which are nesessary for isolation_segment
+        # This code will generate additional ops_files, 
+	# which are nesessary for isolation_segment
     
-        echo "isolation_segment_name: $dname" >> $tmp_ops_files/isolation-var.tmp
-        echo "isolation_segment_count: $dcount" >> $tmp_ops_files/isolation-var.tmp
-        echo "isolation_segment_vm: $dvm" >> $tmp_ops_files/isolation-var.tmp
+        echo "isolation_segment_name: $dname" \
+	   >> $tmp_ops_files/isolation-var.tmp
+        echo "isolation_segment_count: $dcount" \
+	   >> $tmp_ops_files/isolation-var.tmp
+        echo "isolation_segment_vm: $dvm" \
+	   >> $tmp_ops_files/isolation-var.tmp
     
         # Generate use-trusted-ca-cert-for-isolation-apps  
-        bosh int ops_files/use-trusted-ca-cert-for-isolation-apps.yml -l $tmp_ops_files/isolation-var.tmp >> $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml
-    
+        bosh int ops_files/use-trusted-ca-cert-for-isolation-apps.yml \
+	-l $tmp_ops_files/isolation-var.tmp \
+	>> $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml
+   
+        info "$tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml 
+	generated for $dname segment"
+
         # Generate isolation-segment
     
-        bosh int ops_files/isolation-segment.yml -l $tmp_ops_files/isolation-var.tmp >> $tmp_ops_files/isolation-segment.yml
+        bosh int ops_files/isolation-segment.yml \
+	-l $tmp_ops_files/isolation-var.tmp \
+	>> $tmp_ops_files/isolation-segment.yml
+
+	debug "$tmp_ops_files/isolation-segment.yml 
+	generated for $dname segment"
     
         # Merged opsfile for all bosh-dns isolation segment work
     
-        bosh int ops_files/bosh-dns-isolated-segment-config.yml -l $tmp_ops_files/isolation-var.tmp >> $tmp_ops_files/bosh-dns-isolated-segment-config.yml
+        bosh int ops_files/bosh-dns-isolated-segment-config.yml \
+	-l $tmp_ops_files/isolation-var.tmp \
+	>> $tmp_ops_files/bosh-dns-isolated-segment-config.yml
+
+	debug "$tmp_ops_files/bosh-dns-isolated-segment-config.yml 
+	generated for $dname segment"
+
     
       done < misc/isolation-segment.tmpl
     
@@ -140,7 +280,9 @@ function prepare_ops_files() {
     # If bosh-dns is not necessary, empty bosh-dns ops files
      
     if ! [ -z $disable_bosh_dns ]; then
-    
+      info "bosh-dns feature disabled, 
+      so bosh-dns related ops_files will be changed. Be carefull!" 
+
       bosh_dns_opses=( \
         $tmp_ops_files/bosh-dns-isolated-segment-config.yml \
         $tmp_ops_files/add-bosh-dns.yml) 
@@ -167,11 +309,16 @@ function generate_deployment_manifest() {
 # repo, provided var_files, ops_files and env_specific config options. It still
 # have default releases URL for future processing
 #   inputs:  cf_deployment_repo
-    
+
+    info "Generate cf-deployment manifest. 
+    Generated manifest will be in $cf_deployment_generated"
+
+    update_ops_files 
+    #get_env_specific_config 
     prepare_ops_files
 
-    bosh int $cf_deployment_repo/cf-deployment.yml \
-    -o ops_files/change-cell-count-opsfile.yml  cell_count=$cell_count \
+    bosh int $cf_deployment_base \
+    -o ops_files/change-cell-count-opsfile.yml -l var_files/general.var \
     -o ops_files/change-smoke-tests-logs-opsfile.yml \
     -o ops_files/use-ldap-provider.yml -l var_files/ldap.var \
     -o ops_files/disable-router-tls-termination.yml \
@@ -184,17 +331,17 @@ function generate_deployment_manifest() {
     -o ops_files/use-trusted-ca-cert-for-apps.yml -l var_files/trusted_certs.var \
     -o ops_files/override-app-domains.yml -l var_files/app-domains.var \
     -o ops_files/use-minio-blobstore.yml -l var_files/minio.var \
-    -o ops_files/rename-network.yml -v network_name=$network_name -v cell_network_name=$cell_network_name \
-    -o ops_files/rename-deployment.yml -v deployment_name=$deployment_name \
+    -o ops_files/rename-network.yml -l var_files/general.var \
+    -o ops_files/rename-deployment.yml -l var_files/general.var \
     -o ops_files/customize-persistance-disk-opsfile.yml \
     -o ops_files/use-external-dbs.yml -l var_files/ext-db.var \
     -o ops_files/override-loggregator-ports.yml \
-    -o ops_files/enable-component-syslog.yml -l var_files/syslog.var -l var_files/syslog-release.var \
+    -o ops_files/enable-component-syslog.yml -l var_files/syslog.var \
     -o $tmp_ops_files/add-bosh-dns.yml -l var_files/bosh-dns.var \
     -o $tmp_ops_files/isolation-segment.yml \
     -o $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml -l var_files/trusted_certs.var \
     -o $tmp_ops_files/bosh-dns-isolated-segment-config.yml \
-    > $new_manifest
+    > $cf_deployment_generated 
 
 }
 
@@ -202,21 +349,22 @@ function create_tmp_dir() {
 # Helper function. Creates tmp directory for downloaded tars
 # If directory exists, creates one more with random suffix
 
-if [ ! -d $tmp_releases_path ] ; then
-    mkdir $tmp_releases_path
-else
-    suffix=$(tr -dc 'a-z0-9' < /dev/urandom | fold -w 7 | head -n 1)
-    tmp_releases_path="$tmp_releases_path-$suffix"
-    mkdir "$tmp_releases_path"
-fi
+    if [ ! -d $tmp_releases_path ] ; then
+        mkdir $tmp_releases_path
+    else
+        suffix=$(tr -dc 'a-z0-9' < /dev/urandom | fold -w 7 | head -n 1)
+        tmp_releases_path="$tmp_releases_path-$suffix"
+        mkdir "$tmp_releases_path"
+    fi
 }
 
 function count_releases() {
 # Helper funtion. Counts releases and calculates max index for future use
-
+   
+    deployment_manifest=$1
     releases_num=$(bosh int $deployment_manifest --path /releases |\
 	    grep -e "^- name:" | wc -l)
-    echo "DEBUG:There are $releases_num releases in manifest"
+    info "There are $releases_num releases in manifest"
     releases_max_index=$(($releases_num-1))
 }
 
@@ -225,54 +373,117 @@ function transform_tarball_name() {
 #   inputs: release URL
 #   ouputs: release name 
 
-url=$1
-
-tarball_name=$(echo $url | awk -F'/' '{print $NF}' | 
+    url=$1
+     
+    tarball_name=$(echo $url | awk -F'/' '{print $NF}' | 
 	sed -E 's/\?v=(.*)/-\1.tgz/')
+    debug "Tarball name converted. New name is $tarball_name"
 }
 
-function generate_releases_ops() {
-# Function will generate releases ops and var file and use them with bosh int
-release_name=$1
-rename_releases_ops_path=$ci_repo/ops_files/rename-releases-ops.yml
-if [ -f $rename_releases_ops_path ] ; then
-    rm $rename_releases_ops_path
-fi
+function generate_release_ops() {
+# Function will update releases ops file that will be used with bosh int
+#    inputs: release_name, rename_releases_ops_path
 
-echo "     
+    release_name=$1
+  
+
+  debug "Generatng  $rename_releases_ops_path for $1"
+
+    echo "     
 - type: replace          
-  path: /releases/name=$release_name/url
-  value: (($release_name)) 
-" >> $rename_releases_ops_path
+  path: /releases?/name=$1/url
+  value: (($1))" >> $rename_releases_ops_path
+}
+
+function generate_release_var() {
+# Function update var file with release URL from nexus
+#    inputs: releases_urls_var_path, release_name, tarball_name
+    
+    release_name=$1
+    tarball_name=$2
+
+    debug "Generatng $rename_releases_var_path for $1"
+    
+    echo "$1: $nexus_url/$2" >> $rename_releases_var_path 
+}
+
+function upload_release() {
+# Function will upload release tarball to provided NEXUS URL 
+#   inputs: release_path, nexus_url, nexus_login, nexus_password
+
+    tarball_path=$1
+
+    debug "Uploading release from $tarball_path to $nexus_url"
+    #curl -v -u $nexus_login:$nexus_password \
+    #    --upload-file $tarball_path $nexus_url/$tarball_name
+    
 }
 
 function get_releases() {
 # Function will found url in manifest and download tarball to tmp directory,
 # tarball name will be changed to more convinient
 
-    count_releases
-   
+    count_releases $cf_deployment_generated
+
+    if [ -f $rename_releases_ops_path ] ; then
+        rm $rename_releases_ops_path
+    fi
+    if [ -f $rename_releases_var_path ] ; then
+        rm $rename_releases_var_path 
+    fi
+
     for index in $(seq 0 $releases_max_index); do
         url=$(bosh int $deployment_manifest --path /releases/$index/url)
 	name=$(bosh int $deployment_manifest --path /releases/$index/name)
-        generate_releases_ops $name
         transform_tarball_name $url
-	echo "DEBUG: Downloading release $url to $tmp_releases_path/$tarball_name"
+        generate_release_ops $name
+	echo "Downloading release $url to $tmp_releases_path/$tarball_name"
         #wget -q --show-progress $url -O $tmp_releases_path/$tarball_name
+        upload_release $tmp_releases_path/$tarball_name
+	generate_release_var $name $tarball_name
     done    
 }
 
-#function generate_releases_var() {
-# Function will generate releases ops and var file and use them with bosh int
+function rename_releases_urls() {
+# Function will use generated releases_url ops and var files to change releases 
+# URLs in manifest.
+
+    debug "Using generated $rename_releases_ops_path 
+    and $rename_releases_var_path" 
+    
+    cp $cf_deployment_generated $cf_deployment_generated.tmp
+
+    bosh int $cf_deployment_generated.tmp \
+    -o $rename_releases_ops_path -l $rename_releases_var_path \
+    > $cf_deployment_generated 
+
+    rm $cf_deployment_generated.tmp
+    info "Finally generated deployment manifest is in 
+    $cf_deployment_generated and will be used 
+    for deploing CF in the following steps"  
+}
+
+function deploy_cf(){
+# Function deploys cf-deployment using generated manifest and bosh CLI
+
+    info "Now CF will be deployed. \ 
+    $env_name will be used as bosh env in deployment command"
+
+    echo "bosh -e $env_name -d $deployment_name deploy $cf_deployment_generated"
+}
+
+#function run_errands(){
+# Function will run smoke-tests errand
+
 #}
 
 cd $ci_repo
-#function upload_releases() {
-# Function uploads releases to NEXUS
-#
-#}
-update_ops_files
+#update_ops_files
 get_env_specific_config
+configure_build
+generate_deployment_manifest
 #check_bin_prerequsites
 #create_tmp_dir
 get_releases
+rename_releases_urls
+deploy_cf
