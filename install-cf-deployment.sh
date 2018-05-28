@@ -44,12 +44,14 @@ set -e
 #cell_network_name="CELL_NET"
 #network_name="NET"
 
-    env_name=${bambo.env_name}
-    ci_repo="/home/eugene/workspace/cloudfoundry/ci"
-    cf_deployment_repo="/home/eugene/workspace/cf-deployment"
-    var_files_path="/home/eugene/workspace/cloudfoundry/var_files"
-    configs_path="/home/eugene/workspace/cloudfoundry/configs"
-    creds_path="/home/eugene/workspace/cloudfoundry/creds"
+    env_name=${env_name}
+    ci_repo="deployment-ci"
+    cf_deployment_repo="cf-deployment"
+    var_files_path=${var_files_path}
+    configs_path=${config_files_path}
+    creds_path=${creds_path}   
+#    "/home/eugene/workspace/cloudfoundry/configs"
+#    creds_path=${creds_path}"/home/eugene/workspace/cloudfoundry/creds"
 
 
     if [ -z $env_name ]; then
