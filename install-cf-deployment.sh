@@ -393,10 +393,11 @@ function deploy_cf(){
 
 #}
 
-cd $ci_repo
+#cd $ci_repo
 #update_ops_files
 get_vars_from_bamboo
 configure_build
+cd $ci_repo
 generate_deployment_manifest
 #check_bin_prerequsites
 #create_tmp_dir
