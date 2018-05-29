@@ -81,6 +81,7 @@ function configure_build() {
     tmp_ops_files="$ci_repo/tmp_ops_files"
     ops_files="$ci_repo/ops_files"
     vars_file="$ci_repo/build-config/all-vars-file.yml"
+    misc_file="$ci_repo/misc"
     cf_deployment_generated="cf-deployment-new.yml"
     cf_deployment_base="$cf_deployment_repo/cf-deployment.yml"
     tmp_releases_path="$ci_repo/tmp_releases"
@@ -123,8 +124,8 @@ function prepare_ops_files() {
     
     # Copy optional ops_files to tmp folder. They may or may not be empty
     
-    cp ops_files/add-bosh-dns.yml $tmp_ops_files/add-bosh-dns.yml
-    cp ops_files/keep-static-ips-opsfile.yml \
+    cp $ops_files/add-bosh-dns.yml $tmp_ops_files/add-bosh-dns.yml
+    cp $ops_files/keep-static-ips-opsfile.yml \
         $tmp_ops_files/keep-static-ips-opsfile.yml
     
     # Isolation segment ops_files generation
@@ -154,7 +155,7 @@ function prepare_ops_files() {
 	   >> $tmp_ops_files/isolation-var.tmp
     
         # Generate use-trusted-ca-cert-for-isolation-apps  
-        bosh int ops_files/use-trusted-ca-cert-for-isolation-apps.yml \
+        bosh int $ops_files/use-trusted-ca-cert-for-isolation-apps.yml \
 	-l $tmp_ops_files/isolation-var.tmp \
 	>> $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml
    
@@ -163,7 +164,7 @@ function prepare_ops_files() {
 
         # Generate isolation-segment
     
-        bosh int ops_files/isolation-segment.yml \
+        bosh int $ops_files/isolation-segment.yml \
 	-l $tmp_ops_files/isolation-var.tmp \
 	>> $tmp_ops_files/isolation-segment.yml
 
@@ -172,7 +173,7 @@ function prepare_ops_files() {
     
         # Merged opsfile for all bosh-dns isolation segment work
     
-        bosh int ops_files/bosh-dns-isolated-segment-config.yml \
+        bosh int $ops_files/bosh-dns-isolated-segment-config.yml \
 	-l $tmp_ops_files/isolation-var.tmp \
 	>> $tmp_ops_files/bosh-dns-isolated-segment-config.yml
 
@@ -180,7 +181,7 @@ function prepare_ops_files() {
 	generated for $dname segment"
 
     
-      done < misc/isolation-segment.tmpl
+      done < $misc_file/isolation-segment.tmpl
     
     else
     
