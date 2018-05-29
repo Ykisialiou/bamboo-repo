@@ -12,7 +12,15 @@ function get_vars_from_bamboo() {
     # Configuration URLs
 
     vars_file_url=${vars_file_url}
-    config_file_url=${config_file_url}
+
+    # env_specific vars
+    nexus_url=${nexus_url}
+    isolation_segment=${use_isolation_segment}
+    disable_bosh_dns=${disable_bosh_dns}
+    keep_ips=${keep_ips}
+    nexus_login=${nexus_login}
+    nexus_passord=${nexus_password}
+
 
     if [ -z $env_name ]; then
         error "env_name doesn't set up. Please configure it"	    
@@ -91,11 +99,11 @@ function configure_build() {
     ops_files="$ci_repo/ops_files"
     vars_file="$ci_repo/build-config/all-vars-file.yml"
     misc_file="$ci_repo/misc"
-    cf_deployment_generated="cf-deployment-new.yml"
+    cf_deployment_generated="$ci_repo/cf-deployment-new.yml"
     cf_deployment_base="$cf_deployment_repo/cf-deployment.yml"
     tmp_releases_path="$ci_repo/tmp_releases"
 
-    # Download config and vars files
+    # Download vars file
 
     if ! [ -d $ci_repo/build-config ]; then
         mkdir $ci_repo/build-config
@@ -103,10 +111,7 @@ function configure_build() {
     fi
 
     wget "$vars_file_url" -O "$vars_file"
-    wget "$config_file_url" -O "$ci_repo/build-config/build-config.sh"
 
-    # Get vars from files
-    source "$ci_repo/build-config/build-config.sh"
 }
 
 function prepare_ops_files() {
