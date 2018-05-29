@@ -79,6 +79,8 @@ function configure_build() {
     rename_releases_var_path="$ci_repo/var_files/releases-urls.var"
     rename_releases_ops_path="$ci_repo/ops_files/rename-releases-urls-ops.yml"
     tmp_ops_files="$ci_repo/tmp_ops_files"
+    ops_files="$ci_repo/ops_files"
+    vars_file="$ci_repo/build-config/all-vars-file.yml"
     cf_deployment_generated="cf-deployment-new.yml"
     cf_deployment_base="$cf_deployment_repo/cf-deployment.yml"
     tmp_releases_path="$ci_repo/tmp_releases"
@@ -90,7 +92,7 @@ function configure_build() {
         debug "$ci_repo/build-config created"	
     fi
 
-    wget "$vars_file_url" -O  "$ci_repo/build-config/all-vars-file.yml"
+    wget "$vars_file_url" -O "$vars_file"
     wget "$config_file_url" -O "$ci_repo/build-config/build-config.sh"
 
     # Get vars from files
@@ -235,29 +237,30 @@ function generate_deployment_manifest() {
     prepare_ops_files
 
     bosh int $cf_deployment_base \
-    -o ops_files/change-cell-count-opsfile.yml -l var_files/general.var \
-    -o ops_files/change-smoke-tests-logs-opsfile.yml \
-    -o ops_files/use-ldap-provider.yml -l var_files/ldap.var \
-    -o ops_files/disable-router-tls-termination.yml \
-    -o $tmp_ops_files/keep-static-ips-opsfile.yml -l var_files/static-ips.var \
-    -o ops_files/keep-router-ips-opsfile.yml -l var_files/static-ips.var \
-    -o ops_files/change-active-key-label-opsfile.yml \
-    -o ops_files/remove-vm-extensions-opsfile.yml \
-    -o ops_files/rename-vm-type-opsfile.yml -l var_files/vm-types.var \
-    -o ops_files/remove-z3-opsfile.yml \
-    -o ops_files/use-trusted-ca-cert-for-apps.yml -l var_files/trusted_certs.var \
-    -o ops_files/override-app-domains.yml -l var_files/app-domains.var \
-    -o ops_files/use-minio-blobstore.yml -l var_files/minio.var \
-    -o ops_files/rename-network.yml -l var_files/general.var \
-    -o ops_files/rename-deployment.yml -l var_files/general.var \
-    -o ops_files/customize-persistance-disk-opsfile.yml \
-    -o ops_files/use-external-dbs.yml -l var_files/ext-db.var \
-    -o ops_files/override-loggregator-ports.yml \
-    -o ops_files/enable-component-syslog.yml -l var_files/syslog.var \
-    -o $tmp_ops_files/add-bosh-dns.yml -l var_files/bosh-dns.var \
+    -o $ops_files/change-cell-count-opsfile.yml  \
+    -o $ops_files/change-smoke-tests-logs-opsfile.yml \
+    -o $ops_files/use-ldap-provider.yml  \
+    -o $ops_files/disable-router-tls-termination.yml \
+    -o $tmp_ops_files/keep-static-ips-opsfile.yml  \
+    -o $ops_files/keep-router-ips-opsfile.yml  \
+    -o $ops_files/change-active-key-label-opsfile.yml \
+    -o $ops_files/remove-vm-extensions-opsfile.yml \
+    -o $ops_files/rename-vm-type-opsfile.yml \
+    -o $ops_files/remove-z3-opsfile.yml \
+    -o $ops_files/use-trusted-ca-cert-for-apps.yml  \
+    -o $ops_files/override-app-domains.yml \
+    -o $ops_files/use-minio-blobstore.yml \
+    -o $ops_files/rename-network.yml \
+    -o $ops_files/rename-deployment.yml \
+    -o $ops_files/customize-persistance-disk-opsfile.yml \
+    -o $ops_files/use-external-dbs.yml  \
+    -o $ops_files/override-loggregator-ports.yml \
+    -o $ops_files/enable-component-syslog.yml \
+    -o $tmp_ops_files/add-bosh-dns.yml \
     -o $tmp_ops_files/isolation-segment.yml \
-    -o $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml -l var_files/trusted_certs.var \
+    -o $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml \
     -o $tmp_ops_files/bosh-dns-isolated-segment-config.yml \
+    -l $vars_file \
     > $cf_deployment_generated 
 
 }
@@ -397,7 +400,7 @@ function deploy_cf(){
 #update_ops_files
 get_vars_from_bamboo
 configure_build
-cd $ci_repo
+#cd $ci_repo
 generate_deployment_manifest
 #check_bin_prerequsites
 #create_tmp_dir
