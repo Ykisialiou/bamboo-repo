@@ -8,9 +8,11 @@ function get_vars_from_bamboo() {
     env_name=${env_name}
     ci_repo="deployment-ci"
     cf_deployment_repo="cf-deployment"
-    var_files_path=${var_files_path}
-    configs_path=${config_files_path}
-    creds_path=${creds_path}   
+
+    # Configuration URLs
+
+    vars_file_url=${vars_file_url}
+    config_file_url=${config_file_url}
 
     if [ -z $env_name ]; then
         error "env_name doesn't set up. Please configure it"	    
@@ -33,7 +35,6 @@ function error() {
 # Helper function that prints error messages
     echo "ERROR:$1"
 }
-
 
 function check_bin_prerequsites() {
 # Helper function. Check if necessary SW installed, and exits if no prerequsites
@@ -73,8 +74,6 @@ function update_ops_files() {
 function configure_build() {
 # Helper function that setting up necessary variables
 
-    # Get vars from bamboo
-    
     # Set up build flow vars
 
     rename_releases_var_path="$ci_repo/var_files/releases-urls.var"
@@ -84,59 +83,18 @@ function configure_build() {
     cf_deployment_base="$cf_deployment_repo/cf-deployment.yml"
     tmp_releases_path="$ci_repo/tmp_releases"
 
+    # Download config and vars files
 
-    if ! [ -d $ci_repo/configs ]; then
-	error "configs are not found in provided path. please configure build"    
-        exit 35
-    else 
-        debug "Use configs from $configs_path"	    
+    if ! [ -d $ci_repo/build-config ]; then
+        mkdir $ci_repo/build-config
+        debug "$ci_repo/build-config created"	
     fi
 
-    if ! [ -d $ci_repo/creds ]; then
-	error "creds are not found in provided path. please configure build"    
-        exit 35
-    else
-       debug "Use creds from $creds_path"	    
-    fi
+    wget "$vars_file_url" -O  "$ci_repo/build-config/all-vars-file.yml"
+    wget "$config_file_url" -O "$ci_repo/build-config/build-config.sh"
 
     # Get vars from files
-    source $ci_repo/configs/*
-    source $ci_repo/creds/*
-}
-
-
-function get_env_specific_config() {
-# Function will copy env specific var_files amd misc to ci repo directory
-#   inputs: var_files_path, env_name, ci_repo 
-    info "Copy env specific var, misc and config files from path, 
-    provided in var_files_path and env_name variables." 
-
-    if ! [ -d $ci_repo/var_files ]; then
-        mkdir $ci_repo/var_files
-    fi	
-    if ! [ -d $ci_repo/misc ]; then
-        mkdir $ci_repo/misc	    
-    fi
-    if ! [ -d $ci_repo/configs ]; then
-        mkdir $ci_repo/configs	    
-    fi
-    if ! [ -d $ci_repo/creds ]; then
-        mkdir $ci_repo/creds    
-    fi
-
-    debug "Copy var_files from $var_files_path/$env_name/var_files \
-	  to $ci_repo/var_files"
-    cp -r $var_files_path/$env_name/var_files/* $ci_repo/var_files
-
-    debug "Copy misc from $var_files_path/$env_name/misc \
-	  to $ci_repo/misc"
-    cp -r $var_files_path/$env_name/misc/* $ci_repo/misc
-
-    debug "Copy configs from $configs_path to $ci_repo/configs"
-    cp -r $configs_path/$env_name/*  $ci_repo/configs/
-
-    debug "Copy credentials from $creds_path to $ci_repo/creds"
-    cp -r $creds_path/$env_name/*  $ci_repo/creds/
+    source "$ci_repo/build-config/build-config.sh"
 }
 
 function prepare_ops_files() {
@@ -274,7 +232,6 @@ function generate_deployment_manifest() {
     Generated manifest will be in $cf_deployment_generated"
 
     update_ops_files 
-    #get_env_specific_config 
     prepare_ops_files
 
     bosh int $cf_deployment_base \
@@ -345,7 +302,6 @@ function generate_release_ops() {
 #    inputs: release_name, rename_releases_ops_path
 
     release_name=$1
-  
 
   debug "Generatng  $rename_releases_ops_path for $1"
 
@@ -440,7 +396,6 @@ function deploy_cf(){
 cd $ci_repo
 #update_ops_files
 get_vars_from_bamboo
-get_env_specific_config
 configure_build
 generate_deployment_manifest
 #check_bin_prerequsites
