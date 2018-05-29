@@ -85,7 +85,7 @@ function configure_build() {
 
     # Set up build flow vars
 
-    rename_releases_var_path="$ci_repo/var_files/releases-urls.var"
+    rename_releases_var_path="$ci_repo/build-config/releases-urls.var"
     rename_releases_ops_path="$ci_repo/ops_files/rename-releases-urls-ops.yml"
     tmp_ops_files="$ci_repo/tmp_ops_files"
     ops_files="$ci_repo/ops_files"
