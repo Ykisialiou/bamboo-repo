@@ -19,7 +19,7 @@ function get_vars_from_bamboo() {
     disable_bosh_dns=${disable_bosh_dns}
     keep_ips=${keep_ips}
     nexus_login=${nexus_login}
-    nexus_passord=${nexus_password}
+    nexus_password=${nexus_password}
 
 
     if [ -z $env_name ]; then
