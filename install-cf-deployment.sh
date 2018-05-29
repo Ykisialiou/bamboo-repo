@@ -374,7 +374,7 @@ function get_releases() {
             wget -q --show-progress $url -O $tmp_releases_path/$tarball_name
             upload_release $tmp_releases_path/$tarball_name
         else
-           info "File $tarnall_name already exists"
+           info "File $tarball_name already exists"
 	   generate_release_var $name $tarball_name
         fi   
     done    
