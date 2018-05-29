@@ -7,7 +7,7 @@ function get_vars_from_bamboo() {
 
     env_name=${env_name}
     ci_repo="deployment-ci/ci"
-    cf_deployment_repo="cf-deployment/cf-deployment"
+    cf_deployment_repo="cf-deployment-upstream"
 
     # Configuration URLs
 
