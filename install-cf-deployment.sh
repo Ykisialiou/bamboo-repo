@@ -287,8 +287,8 @@ function create_tmp_dir() {
     if [ ! -d $tmp_releases_path ] ; then
         mkdir $tmp_releases_path
     else
-        suffix=$(tr -dc 'a-z0-9' < /dev/urandom | fold -w 7 | head -n 1)
-        tmp_releases_path="$tmp_releases_path-$suffix"
+	info "$tmp_releases_path exists. It will be deleted"
+        rm -r $tmp_releases_path	
         mkdir "$tmp_releases_path"
     fi
 }
@@ -366,6 +366,7 @@ function get_releases() {
         rm $rename_releases_var_path 
     fi
 
+
     for index in $(seq 0 $releases_max_index); do
         url=$(bosh int $deployment_manifest --path /releases/$index/url)
 	name=$(bosh int $deployment_manifest --path /releases/$index/name)
@@ -418,7 +419,7 @@ configure_build
 #cd $ci_repo
 generate_deployment_manifest
 #check_bin_prerequsites
-#create_tmp_dir
+create_tmp_dir
 get_releases
 rename_releases_urls
 deploy_cf
