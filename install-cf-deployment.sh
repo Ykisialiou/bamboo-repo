@@ -348,8 +348,8 @@ function upload_release() {
     tarball_path=$1
 
     debug "Uploading release from $tarball_path to $nexus_url"
-    #curl -v -u $nexus_login:$nexus_password \
-    #    --upload-file $tarball_path $nexus_url/$tarball_name
+    curl -v -u $nexus_login:$nexus_password \
+        --upload-file $tarball_path $nexus_url/$tarball_name
     
 }
 
@@ -372,7 +372,7 @@ function get_releases() {
         transform_tarball_name $url
         generate_release_ops $name
 	echo "Downloading release $url to $tmp_releases_path/$tarball_name"
-        #wget -q --show-progress $url -O $tmp_releases_path/$tarball_name
+        wget -q --show-progress $url -O $tmp_releases_path/$tarball_name
         upload_release $tmp_releases_path/$tarball_name
 	generate_release_var $name $tarball_name
     done    
