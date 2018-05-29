@@ -67,6 +67,15 @@ function update_ops_files() {
 	    Copy $new_ops to $ci_repo/ops_files"
 
             cp $new_ops $ci_repo/ops_files/
+
+	    # Temporary fix, while PR to ofitial repo still not
+            # accepted	    
+	    if [[ "$ops" == "rename-network.yml" ]]; then
+                cat $ci_repo/ops_files/$ops | \
+		sed s/name=singleton-blobstore/name=singleton-blobstore\?/ > tmp
+	        mv tmp $ci_repo/ops_files/$ops 	
+            fi
+        
         fi	
     done
 }
