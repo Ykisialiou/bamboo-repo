@@ -287,9 +287,7 @@ function create_tmp_dir() {
     if [ ! -d $tmp_releases_path ] ; then
         mkdir $tmp_releases_path
     else
-	info "$tmp_releases_path exists. It will be deleted"
-        rm -r $tmp_releases_path	
-        mkdir "$tmp_releases_path"
+	info "$tmp_releases_path exists. It will be reused"
     fi
 }
 
@@ -366,16 +364,19 @@ function get_releases() {
         rm $rename_releases_var_path 
     fi
 
-
     for index in $(seq 0 $releases_max_index); do
         url=$(bosh int $deployment_manifest --path /releases/$index/url)
 	name=$(bosh int $deployment_manifest --path /releases/$index/name)
         transform_tarball_name $url
         generate_release_ops $name
-	echo "Downloading release $url to $tmp_releases_path/$tarball_name"
-        wget -q --show-progress $url -O $tmp_releases_path/$tarball_name
-        upload_release $tmp_releases_path/$tarball_name
-	generate_release_var $name $tarball_name
+	if ! [ -f $tmp_releases_path/$tarball_name ] ; then
+	    info "Downloading release $url to $tmp_releases_path/$tarball_name"
+            wget -q --show-progress $url -O $tmp_releases_path/$tarball_name
+            upload_release $tmp_releases_path/$tarball_name
+        else
+           info "File $tarnall_name already exists"
+	   generate_release_var $name $tarball_name
+        fi   
     done    
 }
 
