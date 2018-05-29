@@ -6,7 +6,7 @@ set -e
 function get_vars_from_bamboo() {
 
     env_name=${env_name}
-    ci_repo="deployment-ci"
+    ci_repo="deployment-ci/ci"
     cf_deployment_repo="cf-deployment"
 
     # Configuration URLs
