@@ -245,12 +245,12 @@ function generate_deployment_manifest() {
     -o $tmp_ops_files/keep-static-ips-opsfile.yml  \
     -o $ops_files/keep-router-ips-opsfile.yml  \
     -o $ops_files/change-active-key-label-opsfile.yml \
+    -o $ops_files/use-minio-blobstore.yml \
     -o $ops_files/remove-vm-extensions-opsfile.yml \
     -o $ops_files/rename-vm-type-opsfile.yml \
     -o $ops_files/remove-z3-opsfile.yml \
     -o $ops_files/use-trusted-ca-cert-for-apps.yml  \
     -o $ops_files/override-app-domains.yml \
-    -o $ops_files/use-minio-blobstore.yml \
     -o $ops_files/rename-network.yml \
     -o $ops_files/rename-deployment.yml \
     -o $ops_files/customize-persistance-disk-opsfile.yml \
