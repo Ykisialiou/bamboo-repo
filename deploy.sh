@@ -10,7 +10,7 @@ function configure_build() {
     keep_ips=${keep_ips}
     vars_file_url=${vars_file_url}
     ci_repo=${ci_repo}
-    artifacts="WORKSPACE"
+    artifacts=${artifacts_location}
     #isolation_segment="true"
     #vars_file_url="https://s3.amazonaws.com/ekiselev-smit-ci/test/all-vars.yml"
     # Set up build flow vars
