@@ -19,8 +19,8 @@ function configure_build() {
     ops_files="$artifacts/ops_files"
     vars_file="$artifacts/build-configs/all-vars-file.yml"
     misc_file="$artifacts/misc"
-    cf_deployment_generated="$ci_repo/cf-deployment-new.yml"
-    cf_deployment_base="$ci_repo/cf-deployment.yml"
+    cf_deployment_generated="$artifacts/cf-deployment-new.yml"
+    cf_deployment_base="$artifacts/cf-deployment.yml"
 
     # Source shared functions
     source $ci_repo/shared-functions.sh 
