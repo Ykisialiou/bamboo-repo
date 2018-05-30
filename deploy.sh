@@ -28,7 +28,7 @@ function configure_build() {
     # Download vars file
     echo $vars_file_url
     debug "Download vars_file"
-    echo "wget $vars_file_url -O $vars_file"
+    wget $vars_file_url -O $vars_file
 
 }
 
