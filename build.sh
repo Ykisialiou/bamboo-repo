@@ -188,7 +188,8 @@ function prepare_artifacts() {
    cp -r $ops_files $artifacts
    cp -r $misc_file $artifacts
    cp -r $ci_repo/build-configs $artifacts  
-   cp $cf_deployment_base $artifacts/ 	
+   cp $cf_deployment_base $artifacts/ 
+   cp $urls_list $artifacts/   
 }
 
 function main () {
