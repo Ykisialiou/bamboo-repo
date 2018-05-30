@@ -23,12 +23,12 @@ function configure_build() {
     misc_file="$artifacts/misc"
     cf_deployment_generated="$artifacts/cf-deployment-new.yml"
     cf_deployment_base="$artifacts/cf-deployment.yml"
+    env_name=${bamboo_deploy_environment}
 
     # Source shared functions
     source $ci_repo/shared-functions.sh 
 
     # Download vars file
-    echo $vars_file_url
     debug "Download vars_file"
     wget $vars_file_url -O $vars_file
 
@@ -195,6 +195,7 @@ function generate_deployment_manifest() {
     -o $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml \
     -o $tmp_ops_files/bosh-dns-isolated-segment-config.yml \
     -l $vars_file \
+    -o $rename_releases_ops_path -l $rename_releases_var_path \
     > $cf_deployment_generated 
 
 }
