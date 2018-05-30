@@ -8,8 +8,18 @@ function configure_build() {
     # Get vars from bamboo
     nexus_url=${nexus_url}
 
-    info "Config variables"	
+    info "Config variables"
 
+    artifacts="WORKSPACE"
+    if [ -d $artifacts ] ; then
+	info "Remove old artifacts directory"    
+        rm -r $artifacts	    
+	mkdir $artifacts 
+    else
+        mkdir $artifacts
+    fi	    
+    info "Build artifacts will be stored in $artifacts"
+   
     ci_repo="deployment-ci/ci"
     cf_deployment_repo="cf-deployment-upstream"
 
@@ -171,6 +181,16 @@ function prepare_releases_files() {
 	echo "$tarball_name $url" >> $urls_list
     done    
 }
+
+function prepare_artifacts() {
+
+   info "Copiing build artifacts to separate folder"	
+   cp -r $ops_files $artifacts
+   cp -r $misc_file $artifacts
+   cp -r $ci_repo/build_configs $artifacts  
+   cp $cf_deployment_base $artifacts/ 	
+}
+
 function main () {
 # Main function, where all other functions called	
     configure_build
@@ -178,6 +198,7 @@ function main () {
     check_bin_prerequsites bosh
     generate_deployment_manifest
     prepare_releases_files
+    prepare_artifacts
 }
 
 main
