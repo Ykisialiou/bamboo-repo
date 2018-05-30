@@ -1,7 +1,7 @@
 #! /bin/bash
 
 set -e
-source "./shared-functions.sh" 
+source "cf-deployment/shared-functions.sh" 
 
 function configure_build() {
 
