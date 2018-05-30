@@ -21,9 +21,6 @@ function configure_build() {
     fi	    
     info "Build artifacts will be stored in $artifacts"
    
-    ci_repo="deployment-ci/ci"
-    cf_deployment_repo="cf-deployment-upstream"
-
     if ! [ -d "$ci_repo/build-configs" ]; then
         mkdir "$ci_repo/build-configs"
     else
