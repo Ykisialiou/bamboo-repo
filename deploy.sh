@@ -195,7 +195,6 @@ function generate_deployment_manifest() {
     -o $tmp_ops_files/use-trusted-ca-cert-for-isolation-apps.yml \
     -o $tmp_ops_files/bosh-dns-isolated-segment-config.yml \
     -l $vars_file \
-    -o $rename_releases_ops_path -l $rename_releases_var_path \
     > $cf_deployment_generated 
 
 }
