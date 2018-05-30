@@ -11,8 +11,6 @@ function configure_build() {
     vars_file_url=${vars_file_url}
     ci_repo=${ci_repo}
     artifacts=${artifacts_location}
-    #isolation_segment="true"
-    #vars_file_url="https://s3.amazonaws.com/ekiselev-smit-ci/test/all-vars.yml"
     # Set up build flow vars
 
     rename_releases_var_path="$artifacts/build-configs/releases-urls.var"
@@ -206,12 +204,12 @@ function deploy_cf(){
     info "Now CF will be deployed. \ 
     $env_name will be used as bosh env in deployment command"
 
-    echo "bosh -e $env_name -d $deployment_name deploy $cf_deployment_generated"
+    bosh -e $env_name -d $deployment_name deploy $cf_deployment_generated
 }
 
 function run_errands(){
 # Function will run smoke-tests errand
-    echo "bosh -e $env_name -d $deployment_name run-errand smoke-tests"
+    bosh -e $env_name -d $deployment_name run-errand smoke-tests
 }
 
 function main () {
