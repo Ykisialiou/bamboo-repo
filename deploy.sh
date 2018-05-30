@@ -10,15 +10,15 @@ function configure_build() {
     keep_ips=${keep_ips}
     vars_file_url=${vars_file_url}
     ci_repo=${ci_repo}
+    artifacts="WORKSPACE"
     #isolation_segment="true"
     #vars_file_url="https://s3.amazonaws.com/ekiselev-smit-ci/test/all-vars.yml"
     # Set up build flow vars
 
-    ci_repo="../cloudfoundry/ci" 
-    tmp_ops_files="$ci_repo/tmp_ops_files"
-    ops_files="$ci_repo/ops_files"
-    vars_file="$ci_repo/build-configs/all-vars-file.yml"
-    misc_file="$ci_repo/misc"
+    tmp_ops_files="$artifacts/tmp_ops_files"
+    ops_files="$artifacts/ops_files"
+    vars_file="$artifacts/build-configs/all-vars-file.yml"
+    misc_file="$artifacts/misc"
     cf_deployment_generated="$ci_repo/cf-deployment-new.yml"
     cf_deployment_base="$ci_repo/cf-deployment.yml"
 
