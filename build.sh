@@ -7,7 +7,8 @@ function configure_build() {
 
     # Get vars from bamboo
     nexus_url=${nexus_url}
-
+    ci_repo=${ci_repo}
+    cf_deployment_repo=${cf_deployment_repo}
     info "Config variables"
 
     artifacts="WORKSPACE"
