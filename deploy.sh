@@ -15,7 +15,7 @@ function configure_build() {
     #vars_file_url="https://s3.amazonaws.com/ekiselev-smit-ci/test/all-vars.yml"
     # Set up build flow vars
 
-    rename_releases_var_path="$artifacts/build-config/releases-urls.var"
+    rename_releases_var_path="$artifacts/build-configs/releases-urls.var"
     rename_releases_ops_path="$artifacts/ops_files/rename-releases-urls-ops.yml"   
     tmp_ops_files="$artifacts/tmp_ops_files"
     ops_files="$artifacts/ops_files"
