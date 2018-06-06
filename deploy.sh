@@ -5,16 +5,17 @@ function configure_build() {
 # Helper function that setting up necessary variables
 
     # Get vars from bamboo
-    isolation_segment=${use_isolation_segment}
     disable_bosh_dns=${disable_bosh_dns}
     keep_ips=${keep_ips}
-    vars_file_url=${vars_file_url}
+    vars_file_path=${vars_file_path}
     ci_repo=${ci_repo}
     artifacts=${artifacts_location}
+    vars_file="$artifacts/build-configs/all-vars-file.yml"
+    isolation_segment_config="${isolation_segment_config}"
     # Set up build flow vars
 
     rename_releases_var_path="$artifacts/build-configs/releases-urls.var"
-    rename_releases_ops_path="$artifacts/ops_files/rename-releases-urls-ops.yml"   
+    rename_releases_ops_path="$artifacts/ops_files/rename-releases-urls-ops.yml"
     tmp_ops_files="$artifacts/tmp_ops_files"
     ops_files="$artifacts/ops_files"
     vars_file="$artifacts/build-configs/all-vars-file.yml"
@@ -28,8 +29,35 @@ function configure_build() {
 
     # Download vars file
     debug "Download vars_file"
-    wget $vars_file_url -O $vars_file
+    download_vars_file $vars_file_path $vars_file
 
+    # Download isolation segment config, if provided
+    if ! [ -z $isolation_segment_config ] ; then
+        
+	debug "Download isolation segment config file from 
+	$isolation_segment_config
+        to
+        $misc_file"
+
+        download_isolation_segment_config $isolation_segment_config $misc_file
+    fi
+}
+
+function download_isolation_segment_config() {
+# Funuction will download misc file with isolation segment 
+# config from external folder
+
+    isolation_segment_config_remote = $1
+    isolation_segment_config_local = $2
+
+    cp $isolation_segment_config_remote $isolation_segment_config_local
+}
+
+function download_vars_file() {
+# Function will download vars file from external folder
+    vars_file_remote_path=$1
+    vars_file_local_path=$2
+    cp $vars_file_remote_path  $vars_file_local_path
 }
 
 function prepare_ops_files() {
@@ -62,7 +90,7 @@ function prepare_ops_files() {
     
     # Isolation segment ops_files generation
     
-    if ! [ -z $isolation_segment ]; then
+    if ! [ -z $isolation_segment_config ]; then
 
       info  "Isolation segment will be used, so it's ops_files 
       will be generated. misc/isolation-segment.tmpl is expected to be 
@@ -197,6 +225,10 @@ function generate_deployment_manifest() {
     > $cf_deployment_generated 
 
 }
+function get_deployment_name () {
+# Function gets bosh deployment name form manifest	
+    cf_deployment_name=$(bosh int $cf_deployment_generated --path /name)
+}
 
 function deploy_cf(){
 # Function deploys cf-deployment using generated manifest and bosh CLI
@@ -204,18 +236,19 @@ function deploy_cf(){
     info "Now CF will be deployed. \ 
     $env_name will be used as bosh env in deployment command"
 
-    bosh -e $env_name -d $deployment_name deploy $cf_deployment_generated
+    bosh -e $env_name -d $cf_deployment_name deploy $cf_deployment_generated
 }
 
 function run_errands(){
 # Function will run smoke-tests errand
-    bosh -e $env_name -d $deployment_name run-errand smoke-tests
+    bosh -e $env_name -d $cf_deployment_name run-errand smoke-tests
 }
 
 function main () {
 
     configure_build
     generate_deployment_manifest
+    get_deployment_name
     deploy_cf
     run_errands
 }
